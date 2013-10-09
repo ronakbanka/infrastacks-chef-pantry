@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: bigdatadev
-# Recipe:: [Setup a Big Data Development Environment: Hadoop]
+# Cookbook Name:: appliv-io-cdh4
+# Recipe:: [Setup Appliv-IO]
 #
 # Copyright 2012, InfraStacks,LLC  engineering@infrastacks.com
 #

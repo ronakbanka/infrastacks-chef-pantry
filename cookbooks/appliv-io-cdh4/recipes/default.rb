@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: bdas
-# Recipe:: [Setup a Berkeley Data Analysis Stack Environment]
+# Cookbook Name:: appliv-io-cdh4
+# Recipe:: [Setup Appliv-IO]
 #
 # Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #

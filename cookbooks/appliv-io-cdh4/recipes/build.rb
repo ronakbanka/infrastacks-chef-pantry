@@ -16,22 +16,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+package "upstart"
+package "libunwind7"
+package "libunwind7-dev"
 
-
-template "spark-worker" do
-  path "/etc/init/spark-worker.conf"
-  source "spark-worker-init.conf.erb"
-  owner "root"
-  group "root"
-  mode "0755"
-  notifies :enable, "service[spark-worker]"
-  notifies :start, "service[spark-worker]"
-end
-
-service "spark-worker" do
-    provider Chef::Provider::Service::Upstart
-    supports :status => true, :restart => true
-    action [:enable, :start]
-end 
-
+include_recipe "java::oracle"
 

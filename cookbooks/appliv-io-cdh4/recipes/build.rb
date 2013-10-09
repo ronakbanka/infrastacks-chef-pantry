@@ -41,11 +41,11 @@ script "Setup Build Environment" do
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating") }
 end
 
-script "Building Spark" do
+script "Building Spark for CDH4" do
   interpreter "bash"
   code <<-EOH
-  mkdir -p /home/vagrant/appliv-io-cdh4-build
-  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
+  cd /home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating
+  
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating") }
+  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating") }
 end

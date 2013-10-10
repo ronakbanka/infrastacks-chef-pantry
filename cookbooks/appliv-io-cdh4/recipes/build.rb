@@ -63,8 +63,9 @@ end
 #   interpreter "bash"
 #   code <<-EOH
 #   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
-#   sudo sbt/sbt assembly
-#   sudo ./make-distribution.sh --hadoop 2.0.0-mr1-cdh4.2.0 --tgz
+#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
+#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
+#   sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
 #   EOH
 #   #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 # end

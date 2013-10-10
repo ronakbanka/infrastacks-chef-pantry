@@ -64,7 +64,7 @@ end
 #   code <<-EOH
 #   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
 #   sudo sbt/sbt assembly
-#   sudo ./make-distribution.sh --hadoop 2.0.0-mr1-cdh4.2.0
+#   sudo ./make-distribution.sh --hadoop 2.0.0-mr1-cdh4.2.0 --tgz
 #   EOH
 #   #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 # end

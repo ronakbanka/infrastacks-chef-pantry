@@ -78,12 +78,12 @@ script "Packaging Spark for CDH4" do
   sudo mkdir -p /home/vagrant/appliv-io-cdh4-build/pkg
   sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/conf /opt/appliv-io-cdh4
   sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/bin  /opt/appliv-io-cdh4
-  fpm --verbose --workdir /home/vagrant/appliv-io-cdh4-build/pkg/ \
+  fpm --verbose --package /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb --workdir /home/vagrant/appliv-io-cdh4-build/pkg/ \
   -s dir -t deb -n appliv-io-cdh4 -v 0.0.1-beta -m engineering@appliv.io \
   --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
   --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
-  --post-install="/opt/appliv-io-cdh4/conf/setsenv.sh" -C /home/vagrant/appliv-io-cdh4-build/ /opt/appliv-io-cdh4/
-  sudo mv  /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb /home/vagrant/appliv-io-cdh4-build/pkg/
+  --post-install="/opt/appliv-io-cdh4/conf/setsenv.sh" -C /home/vagrant/appliv-io-cdh4-build/ /opt/appliv-io-cdh4/ 
+  sudo mv  /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/pkg/appliv-io-cdh4_0.0.1-beta_amd64.deb") }
 end

@@ -16,13 +16,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+execute "update package index" do
+  command "apt-get update"
+  ignore_failure true
+  action :run
+end.run_action(:run)
+
+execute "apt-get-update-periodic" do
+  command "apt-get update"
+  ignore_failure true
+  only_if do
+    File.exists?('/var/lib/apt/periodic/update-success-stamp') &&
+    File.mtime('/var/lib/apt/periodic/update-success-stamp') < Time.now - 86400
+  end
+end
+
 package "upstart"
 package "libunwind7"
 package "libunwind7-dev"
+package "git"
+#package "openjdk-7-jdk"
 
 gem_package "fpm"
 
-include_recipe "java::oracle"
+include_recipe "java::openjdk"
 
 appliv_io_spark_dist = node[:appliv_io_cdh4][:dist]
 appliv_io_spark_wget_path = node[:appliv_io_cdh4][:wget_path]
@@ -38,14 +56,15 @@ script "Setup Build Environment" do
   mkdir -p /home/vagrant/appliv-io-cdh4-build
   tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating") }
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
 
-script "Building Spark for CDH4" do
-  interpreter "bash"
-  code <<-EOH
-  cd /home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating
-  
-  EOH
-  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating") }
-end
+# script "Building Spark for CDH4" do
+#   interpreter "bash"
+#   code <<-EOH
+#   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
+#   sudo sbt/sbt assembly
+#   sudo ./make-distribution.sh --hadoop 2.0.0-mr1-cdh4.2.0
+#   EOH
+#   #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
+# end

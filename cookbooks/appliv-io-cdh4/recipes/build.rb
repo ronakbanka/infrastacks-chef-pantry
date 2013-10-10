@@ -59,13 +59,32 @@ script "Setup Build Environment" do
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
 
-# script "Building Spark for CDH4" do
-#   interpreter "bash"
-#   code <<-EOH
-#   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
-#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
-#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
-#   sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
-#   EOH
-#   #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
-# end
+script "Building Spark for CDH4" do
+  interpreter "bash"
+  code <<-EOH
+  cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
+  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
+  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
+  sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
+  sudo mkdir -p /opt/appliv-io-cdh4/component
+  sudo tar -zxvf spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz -C /opt/appliv-io-cdh4/component/
+  EOH
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
+end
+
+script "Packaging Spark for CDH4" do
+  interpreter "bash"
+  code <<-EOH
+  sudo mkdir -p /home/vagrant/appliv-io-cdh4-build/pkg
+  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/conf /opt/appliv-io-cdh4
+  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/bin  /opt/appliv-io-cdh4
+  fpm --verbose --workdir /home/vagrant/appliv-io-cdh4-build/pkg/ \
+  -s dir -t deb -n appliv-io-cdh4 -v 0.0.1-beta -m engineering@appliv.io \
+  --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
+  --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
+  --post-install="/opt/appliv-io-cdh4/conf/setsenv.sh" -C /home/vagrant/appliv-io-cdh4-build/ /opt/appliv-io-cdh4/
+  sudo mv  /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb /home/vagrant/appliv-io-cdh4-build/pkg/
+  EOH
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/pkg/appliv-io-cdh4_0.0.1-beta_amd64.deb") }
+end
+

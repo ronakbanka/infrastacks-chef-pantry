@@ -43,11 +43,19 @@ include_recipe "java::openjdk"
 
 appliv_io_spark_dist = node[:appliv_io_cdh4][:dist]
 appliv_io_spark_wget_path = node[:appliv_io_cdh4][:wget_path]
+appliv_io_scala_wget_path = node[:appliv_io_cdh4][:scala][:wget_path]
+
 
 remote_file "/tmp/spark-#{appliv_io_spark_dist}.tgz" do
   source "#{appliv_io_spark_wget_path}"
   not_if { File.exists?("/tmp/spark-#{appliv_io_spark_dist}.tgz") }
 end
+
+remote_file "/tmp/scala-2.9.3.tgz" do
+  source "#{appliv_io_scala_wget_path}"
+  not_if { File.exists?("/tmp/scala-2.9.3.tgz") }
+end
+
 
 script "Setup Build Environment" do
   interpreter "bash"

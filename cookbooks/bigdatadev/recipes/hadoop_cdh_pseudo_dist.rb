@@ -21,7 +21,7 @@
 # Most of this will refactored in a later version
 
 
-include_recipe "java::oracle"
+include_recipe "java::openjdk"
 
 dist = node[:bigdatadev][:hadoop][:dist]
 path = node[:bigdatadev][:hadoop][:path]

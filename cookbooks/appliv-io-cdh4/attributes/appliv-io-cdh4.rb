@@ -8,9 +8,17 @@ default[:appliv_io_cdh4][:scala][:home] = "/opt/appliv-io-cdh4/deps/scala-2.9.3"
 default[:appliv_io_cdh4][:dist] = "0.8.0"
 default[:appliv_io_cdh4][:wget_path] = "http://spark-project.org/download/spark-0.8.0-incubating.tgz"
 
+#Shark
+
+
+
 
 #Mesos
 default[:appliv_io_cdh4][:mesos][:home] = "/usr/local/mesos"
 default[:appliv_io_cdh4][:mesos][:master] = "appliv-io-node1"
 default[:appliv_io_cdh4][:mesos][:slaves_prefix] = "appliv-io-node" 
 default[:appliv_io_cdh4][:mesos][:ssh_key_options] = "key"
+
+#Dependencies
+
+default[:appliv_io_cdh4][:scala][:wget_path] = "http://www.scala-lang.org/files/archive/scala-2.9.3.tgz"

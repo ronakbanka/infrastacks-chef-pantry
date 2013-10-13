@@ -36,7 +36,6 @@ package "upstart"
 package "libunwind7"
 package "libunwind7-dev"
 package "git"
-#package "openjdk-7-jdk"
 
 gem_package "fpm"
 

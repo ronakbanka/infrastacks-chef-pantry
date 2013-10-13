@@ -132,7 +132,7 @@ script "Building Shark for CDH4" do
 end
 
 
-script "Packaging Spark for CDH4" do
+script "Packaging appliv-io for CDH4" do
   interpreter "bash"
   code <<-EOH
   sudo mkdir -p /home/vagrant/appliv-io-cdh4-build/pkg

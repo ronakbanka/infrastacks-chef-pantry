@@ -22,3 +22,4 @@ default[:appliv_io_cdh4][:mesos][:ssh_key_options] = "key"
 #Dependencies
 
 default[:appliv_io_cdh4][:scala][:wget_path] = "http://www.scala-lang.org/files/archive/scala-2.9.3.tgz"
+default[:appliv_io_cdh4][:hive][:wget_path] = "http://spark-project.org/download-hive-0.9.0-bin.tar.tz"

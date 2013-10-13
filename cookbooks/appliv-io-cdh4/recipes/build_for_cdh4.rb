@@ -44,6 +44,12 @@ include_recipe "java::openjdk"
 appliv_io_spark_dist = node[:appliv_io_cdh4][:dist]
 appliv_io_spark_wget_path = node[:appliv_io_cdh4][:wget_path]
 appliv_io_scala_wget_path = node[:appliv_io_cdh4][:scala][:wget_path]
+appliv_io_hive_wget_path = node[:appliv_io_cdh4][:hive][:wget_path]
+
+remote_file "/tmp/scala-2.9.3.tgz" do
+  source "#{appliv_io_scala_wget_path}"
+  not_if { File.exists?("/tmp/scala-2.9.3.tgz") }
+end
 
 
 remote_file "/tmp/spark-#{appliv_io_spark_dist}.tgz" do
@@ -51,9 +57,20 @@ remote_file "/tmp/spark-#{appliv_io_spark_dist}.tgz" do
   not_if { File.exists?("/tmp/spark-#{appliv_io_spark_dist}.tgz") }
 end
 
-remote_file "/tmp/scala-2.9.3.tgz" do
-  source "#{appliv_io_scala_wget_path}"
-  not_if { File.exists?("/tmp/scala-2.9.3.tgz") }
+remote_file "/tmp/hive-0.9.0-bin.tar.gz" do
+  source "#{appliv_io_hive_wget_path}"
+  not_if { File.exists?("/tmp/hive-0.9.0-bin.tar.gz") }
+end
+
+script "Setup Dependencies" do
+  interpreter "bash"
+  code <<-EOH
+  sudo mkdir -p /opt/appliv-io-cdh4/component
+  sudo mkdir -p /opt/appliv-io-cdh4/deps
+  tar -zxvf /tmp/scala-2.9.3.tgz -C /opt/appliv-io-cdh4/deps
+  tar -zxvf /tmp/hive-0.9.0-bin.tar.gz -C /opt/appliv-io-cdh4/deps
+  EOH
+  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
 
 
@@ -62,9 +79,14 @@ script "Setup Build Environment" do
   code <<-EOH
   mkdir -p /home/vagrant/appliv-io-cdh4-build
   tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
+  cd /home/vagrant/appliv-io-cdh4-build
+  sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
+
+
+
 
 script "Building Spark for CDH4" do
   interpreter "bash"
@@ -73,7 +95,6 @@ script "Building Spark for CDH4" do
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
   sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
-  sudo mkdir -p /opt/appliv-io-cdh4/component
   sudo tar -zxvf spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz -C /opt/appliv-io-cdh4/component/
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
@@ -92,6 +113,6 @@ script "Packaging Spark for CDH4" do
   --post-install="/opt/appliv-io-cdh4/conf/setsenv.sh" -C /home/vagrant/appliv-io-cdh4-build/ /opt/appliv-io-cdh4/ 
   sudo mv  /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/pkg/appliv-io-cdh4_0.0.1-beta_amd64.deb") }
+  not_if { File.exists?("/home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg/appliv-io-cdh4_0.0.1-beta_amd64.deb") }
 end
 

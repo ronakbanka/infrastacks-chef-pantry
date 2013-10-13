@@ -26,16 +26,16 @@ export SHARK_MASTER_MEM=1g
 export SCALA_HOME=<%= @node[:appliv_io_cdh4][:scala][:home] %>
 
 # (Required) Point to the patched Hive binary distribution
-export HIVE_HOME="/usr/local/hive-0.9.0-bin"
+export HIVE_HOME="<%= @node[:appliv_io_cdh4][:hive][:home] %>"
 # (Optional) Specify the location of Hive's configuration directory. By default,
 # it points to $HIVE_HOME/conf
 #export HIVE_CONF_DIR="$HIVE_HOME/conf"
 
 # For running Shark in distributed mode, set the following:
-export HADOOP_HOME="/usr/lib/hadoop-0.20-mapreduce"
+export HADOOP_HOME="<%= @node[:appliv_io_cdh4][:hadoop][:home] %>"
 export SPARK_HOME="<%= @node[:appliv_io_cdh4][:spark][:home] %>"
 export MASTER="spark://<%= @node[:appliv_io_cdh4][:spark][:master] %>:7077"
-# export MESOS_NATIVE_LIBRARY="/usr/local/mesos/lib/libmesos.so"
+# export MESOS_NATIVE_LIBRARY="<%= @node[:appliv_io_cdh4][:mesos][:home] %>"
 
 # (Optional) Extra classpath
 #export SPARK_LIBRARY_PATH=""

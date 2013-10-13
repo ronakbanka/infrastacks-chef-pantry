@@ -17,6 +17,11 @@
 # limitations under the License.
 #
 
+# Components
+# spark-0.8.0
+# shark-0.8.0
+
+
 execute "update package index" do
   command "apt-get update"
   ignore_failure true
@@ -78,19 +83,32 @@ script "Setup Build Environment" do
   interpreter "bash"
   code <<-EOH
   mkdir -p /home/vagrant/appliv-io-cdh4-build
-  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
   cd /home/vagrant/appliv-io-cdh4-build
-  sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8
+  sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.0
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
+  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
 
+template "shark-env.sh" do
+  path "/home/vagrant/appliv-io-cdh4-build/shark-0.8.0/conf/shark-env.sh"
+  source "shark-env.sh.erb"
+  # owner "root"
+  # group "root"
+  mode "0755"
+end
 
-
+template "SharkBuild.scala" do
+  path "/home/vagrant/appliv-io-cdh4-build/shark-0.8.0/project/SharkBuild.scala"
+  source "SharkBuild.scala.erb"
+  # owner "root"
+  # group "root"
+  mode "0755"
+end
 
 script "Building Spark for CDH4" do
   interpreter "bash"
   code <<-EOH
+  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
@@ -99,6 +117,20 @@ script "Building Spark for CDH4" do
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
 end
+
+
+script "Building Shark for CDH4" do
+  interpreter "bash"
+  code <<-EOH
+  cd /home/vagrant/appliv-io-cdh4-build/shark-0.8.0
+  sudo sbt/sbt compile
+  cd /home/vagrant/appliv-io-cdh4-build
+  sudo tar -zcvf shark-0.8.0.tar.gz shark-0.8.0
+  sudo tar -zxvf shark-0.8.0.tar.gz -C /opt/appliv-io-cdh4/component/
+  EOH
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0.tar.gz") }
+end
+
 
 script "Packaging Spark for CDH4" do
   interpreter "bash"

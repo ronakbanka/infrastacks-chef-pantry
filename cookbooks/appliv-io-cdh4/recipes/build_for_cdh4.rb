@@ -20,6 +20,7 @@
 # Components
 # spark-0.8.0
 # shark-0.8.0
+# mesos-0.13.0
 
 
 execute "update package index" do
@@ -50,6 +51,8 @@ appliv_io_spark_dist = node[:appliv_io_cdh4][:dist]
 appliv_io_spark_wget_path = node[:appliv_io_cdh4][:wget_path]
 appliv_io_scala_wget_path = node[:appliv_io_cdh4][:scala][:wget_path]
 appliv_io_hive_wget_path = node[:appliv_io_cdh4][:hive][:wget_path]
+appliv_io_mesos_wget_path = node[:appliv_io_cdh4][:mesos][:wget_path]
+
 
 remote_file "/tmp/scala-2.9.3.tgz" do
   source "#{appliv_io_scala_wget_path}"
@@ -66,6 +69,12 @@ remote_file "/tmp/hive-0.9.0-bin.tar.gz" do
   source "#{appliv_io_hive_wget_path}"
   not_if { File.exists?("/tmp/hive-0.9.0-bin.tar.gz") }
 end
+
+remote_file "/tmp/mesos-0.13.0.tar.gz" do
+  source "#{appliv_io_mesos_wget_path}"
+  not_if { File.exists?("/tmp/mesos-0.13.0.tar.gz") }
+end
+
 
 script "Setup Dependencies" do
   interpreter "bash"
@@ -86,7 +95,7 @@ script "Setup Build Environment" do
   cd /home/vagrant/appliv-io-cdh4-build
   sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.0
   EOH
-  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0") }
 end
 
 template "shark-env.sh" do

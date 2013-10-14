@@ -14,6 +14,7 @@ default[:appliv_io_cdh4][:wget_path] = "http://spark-project.org/download/spark-
 
 
 #Mesos
+default[:appliv_io_cdh4][:mesos][:wget_path] = "http://download.nextag.com/apache/mesos/0.13.0/mesos-0.13.0.tar.gz"
 default[:appliv_io_cdh4][:mesos][:home] = "/opt/appliv-io-cdh4/component/mesos-0.13.0"
 default[:appliv_io_cdh4][:mesos][:master] = "localhost"
 default[:appliv_io_cdh4][:mesos][:slaves_prefix] = "appliv-io-node" 

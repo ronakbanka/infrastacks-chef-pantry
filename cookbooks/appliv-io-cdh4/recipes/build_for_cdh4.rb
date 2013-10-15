@@ -88,15 +88,33 @@ script "Setup Dependencies" do
 end
 
 
-script "Setup Build Environment" do
+script "Setup Spark Build Environment" do
   interpreter "bash"
   code <<-EOH
   mkdir -p /home/vagrant/appliv-io-cdh4-build
-  cd /home/vagrant/appliv-io-cdh4-build
+  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
+  EOH
+  not_if { File.exists?("/home/vagrant/spark-#{appliv_io_spark_dist}-incubating") }
+end
+
+
+script "Setup Shark Build Environment" do
+  interpreter "bash"
+  code <<-EOH
+  cd /home/vagrant/appliv-io-cdh4-build/
   sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.0
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0") }
 end
+
+script "Setup Mesos Build Environment" do
+  interpreter "bash"
+  code <<-EOH
+  sudo tar -zxvf /tmp/mesos-0.13.0.tar.gz -C /home/vagrant/appliv-io-cdh4-build
+  EOH
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/mesos-0.13.0/") }
+end
+
 
 template "shark-env.sh" do
   path "/home/vagrant/appliv-io-cdh4-build/shark-0.8.0/conf/shark-env.sh"
@@ -117,7 +135,6 @@ end
 script "Building Spark for CDH4" do
   interpreter "bash"
   code <<-EOH
-  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
   cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly

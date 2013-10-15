@@ -170,7 +170,7 @@ script "Building Mesos for CDH4" do
   sudo make
   sudo make install
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0.tar.gz") }
+  not_if { File.exists?("/opt/appliv-io-cdh4/component/mesos-0.13.0") }
 end
 
 

@@ -1,28 +1,22 @@
 #!/usr/bin/env bash
 
 # This file contains environment variables required to run Spark. Copy it as
-# spark-env.sh and edit that to configure Spark for your site. At a minimum,
-# the following two variables should be set:
-# - MESOS_NATIVE_LIBRARY, to point to your Mesos native library (libmesos.so)
-# - SCALA_HOME, to point to your Scala installation
-# export MESOS_NATIVE_LIBRARY=/usr/local/mesos/lib/libmesos.so
-export SCALA_HOME=<%= @node[:appliv_io_cdh4][:scala][:home] %>
-# Options for SSH.
-export SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=2 -i /root/hadoop.pem"
+# spark-env.sh and edit that to configure Spark for your site.
 #
-# If using the standalone deploy mode, you can also set variables for it:
-# - SPARK_MASTER_IP, to bind the master to a different IP address
+# The following variables can be set in this file:
+# - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node
+# - MESOS_NATIVE_LIBRARY, to point to your libmesos.so if you use Mesos
+export MESOS_NATIVE_LIBRARY=<%= @node[:appliv_io_cdh4][:mesos][:lib] %>
+# - SPARK_JAVA_OPTS, to set node-specific JVM options for Spark. Note that
+#   we recommend setting app-wide options in the application's driver program.
+#     Examples of node-specific options : -Dspark.local.dir, GC options
+#     Examples of app-wide options : -Dspark.serializer
+#
+# If using the standalone deploy mode, you can also set variables for it here:
+# - SPARK_MASTER_IP, to bind the master to a different IP address or hostname
+export SPARK_MASTER_IP=<%= @node[:appliv_io_cdh4][:spark][:master] %>
 # - SPARK_MASTER_PORT / SPARK_MASTER_WEBUI_PORT, to use non-default ports
 # - SPARK_WORKER_CORES, to set the number of cores to use on this machine
 # - SPARK_WORKER_MEMORY, to set how much memory to use (e.g. 1000m, 2g)
 # - SPARK_WORKER_PORT / SPARK_WORKER_WEBUI_PORT
-# - SPARK_WORKER_INSTANCES, to set the number of worker instances/processes to be spawned on every slave machine
-#
-# Finally, Spark also relies on the following variables, but these can be set
-# on just the *master* (i.e. in your driver program), and will automatically
-# be propagated to workers:
-# - SPARK_MEM, to change the amount of memory used per node (this should
-#   be in the same format as the JVM's -Xmx option, e.g. 300m or 1g)
-# - SPARK_CLASSPATH, to add elements to Spark's classpath
-# - SPARK_JAVA_OPTS, to add JVM options
-# - SPARK_LIBRARY_PATH, to add extra search paths for native libraries.
+# - SPARK_WORKER_INSTANCES, to set the number of worker processes per node

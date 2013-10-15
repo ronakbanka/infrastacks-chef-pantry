@@ -42,6 +42,9 @@ package "upstart"
 package "libunwind7"
 package "libunwind7-dev"
 package "git"
+package "build-essential"
+package "python-dev"
+package "libcurl4-openssl-dev"
 
 gem_package "fpm"
 
@@ -112,7 +115,7 @@ script "Setup Mesos Build Environment" do
   code <<-EOH
   sudo tar -zxvf /tmp/mesos-0.13.0.tar.gz -C /home/vagrant/appliv-io-cdh4-build
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/mesos-0.13.0/") }
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/mesos-0.13.0") }
 end
 
 
@@ -153,6 +156,19 @@ script "Building Shark for CDH4" do
   cd /home/vagrant/appliv-io-cdh4-build
   sudo tar -zcvf shark-0.8.0.tar.gz shark-0.8.0
   sudo tar -zxvf shark-0.8.0.tar.gz -C /opt/appliv-io-cdh4/component/
+  EOH
+  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0.tar.gz") }
+end
+
+
+script "Building Mesos for CDH4" do
+  interpreter "bash"
+  code <<-EOH
+  cd /home/vagrant/appliv-io-cdh4-build/mesos-0.13.0
+  sudo ./configure --prefix=/opt/appliv-io-cdh4/component/mesos-0.13.0
+  sudo make clean
+  sudo make
+  sudo make install
   EOH
   not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0.tar.gz") }
 end

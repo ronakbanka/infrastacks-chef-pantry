@@ -4,7 +4,7 @@
 # description: spark-worker daemon
 # processname: spark-worker
 
-DAEMON_PATH="/opt/appliv-io-cdh4/component/spark-0.7.3/run spark.deploy.worker.Worker spark://<%= @node[:appliv_io_cdh4][:spark][:master] %>:7077"
+DAEMON_PATH="/opt/appliv-io-cdh4/component/spark-0.8.0-incubating/run spark.deploy.worker.Worker spark://<%= @node[:appliv_io_cdh4][:spark][:master] %>:7077"
 
 #DAEMON=run
 #DAEMONOPTS="spark.deploy.worker.Worker spark://<%= @node[:appliv_io_cdh4][:spark][:master] %>:7077"

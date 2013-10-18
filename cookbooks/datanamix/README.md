@@ -1,4 +1,4 @@
-Appliv-DS Cookbook
+Appliv Datanamix Cookbook
 =============
 TODO: Enter the cookbook description here.
 

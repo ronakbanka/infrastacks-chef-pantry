@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: appliv-io-cdh4
-# Recipe:: [Setup Appliv-IO]
+# Cookbook Name:: datanamix
+# Recipe:: [Setup Datanamix]
 #
 # Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #
@@ -23,50 +23,50 @@ package "libunwind7-dev"
 
 include_recipe "java::oracle"
 
-appliv_io_path = node[:appliv_io_cdh4][:wget_path]
-appliv_io_dist = node[:appliv_io_cdh4][:dist]
+datanamix_path = node[:datanamix][:wget_path]
+datanamix_dist = node[:datanamix][:dist]
 
-remote_file "/opt/#{appliv_io_dist}.deb" do
-  source "#{appliv_io_path}"
-  not_if { File.exists?("/opt/#{appliv_io_dist}.deb") }
+remote_file "/opt/#{datanamix_dist}.deb" do
+  source "#{datanamix_path}"
+  not_if { File.exists?("/opt/#{datanamix_dist}.deb") }
 end
 
 
-# script "Installing appliv-io" do
+# script "Installing datanamix" do
 #   interpreter "bash"
 #   code <<-EOH
 #   dpkg -i /opt/#{appliv_ds_dist}.deb
 #   EOH
-#   not_if { 'dpkg --list | egrep appliv-io' }
+#   not_if { 'dpkg --list | egrep datanamix' }
 # end
 
-# execute "Installing appliv-io" do
+# execute "Installing datanamix" do
 #   command "dpkg -i /opt/#{appliv_ds_dist}.deb"
-#   not_if { 'dpkg --list | egrep appliv-io-cdh4' }
+#   not_if { 'dpkg --list | egrep datanamix' }
 # end
 
-dpkg_package "appliv-io" do
-  source "/opt/#{appliv_io_dist}.deb"
+dpkg_package "datanamix" do
+  source "/opt/#{datanamix_dist}.deb"
   action :install
 end
 
 
-template "/opt/appliv-io-cdh4/component/spark-0.7.3/conf/spark-env.sh" do
+template "/opt/datanamix/component/spark-0.8.0-incubating/conf/spark-env.sh" do
   source "spark-env.sh.erb"
   mode 0644
 end
 
 
-template "/opt/appliv-io-cdh4/component/shark-0.7.0/conf/shark-env.sh" do
+template "/opt/datanamix/component/shark-0.7.0/conf/shark-env.sh" do
   source "shark-env.sh.erb"
   mode 0644
 end
-template "/opt/appliv-io-cdh4/component/spark-0.7.3/bin/spark-worker.sh" do
+template "/opt/datanamix/component/spark-0.8.0-incubating/bin/spark-worker.sh" do
   source "spark-worker.sh.erb"
   mode 0755
 end
 
-template "/opt/appliv-io-cdh4/component/spark-0.7.3/bin/spark-master.sh" do
+template "/opt/datanamix/component/spark-0.8.0-incubating/bin/spark-master.sh" do
   source "spark-master.sh.erb"
   mode 0755
 end

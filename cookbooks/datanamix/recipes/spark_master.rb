@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: appliv-io-cdh4
-# Recipe:: [Setup Appliv-IO]
+# Cookbook Name:: datanamix
+# Recipe:: [Setup Datanamix]
 #
 # Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #
@@ -18,17 +18,17 @@
 #
 
 
-template "spark-worker" do
-  path "/etc/init/spark-worker.conf"
-  source "spark-worker-init.conf.erb"
+template "spark-master" do
+  path "/etc/init/spark-master.conf"
+  source "spark-master-init.conf.erb"
   owner "root"
   group "root"
   mode "0755"
-  notifies :enable, "service[spark-worker]"
-  notifies :start, "service[spark-worker]"
+  notifies :enable, "service[spark-master]"
+  notifies :start, "service[spark-master]"
 end
 
-service "spark-worker" do
+service "spark-master" do
     provider Chef::Provider::Service::Upstart
     supports :status => true, :restart => true
     action [:enable, :start]

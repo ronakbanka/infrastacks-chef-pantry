@@ -2,7 +2,8 @@
 
 # Copyright (C) 2012 The Regents of The University California.
 # All rights reserved.
-#
+# Copyright (C) 2013 Appliv, LLC.
+# All rights reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,19 +24,19 @@ export SPARK_MEM=1g
 export SHARK_MASTER_MEM=1g
 
 # (Required) Point to your Scala installation.
-export SCALA_HOME=<%= @node[:appliv_io_cdh4][:scala][:home] %>
+export SCALA_HOME=<%= @node[:datanamix][:scala][:home] %>
 
 # (Required) Point to the patched Hive binary distribution
-export HIVE_HOME="<%= @node[:appliv_io_cdh4][:hive][:home] %>"
+export HIVE_HOME="<%= @node[:datanamix][:hive][:home] %>"
 # (Optional) Specify the location of Hive's configuration directory. By default,
 # it points to $HIVE_HOME/conf
 #export HIVE_CONF_DIR="$HIVE_HOME/conf"
 
 # For running Shark in distributed mode, set the following:
-export HADOOP_HOME="<%= @node[:appliv_io_cdh4][:hadoop][:home] %>"
-export SPARK_HOME="<%= @node[:appliv_io_cdh4][:spark][:home] %>"
-export MASTER="spark://<%= @node[:appliv_io_cdh4][:spark][:master] %>:7077"
-# export MESOS_NATIVE_LIBRARY="<%= @node[:appliv_io_cdh4][:mesos][:home] %>"
+export HADOOP_HOME="<%= @node[:datanamix][:hadoop][:home] %>"
+export SPARK_HOME="<%= @node[:datanamix][:spark][:home] %>"
+export MASTER="spark://<%= @node[:datanamix][:spark][:master] %>:7077"
+# export MESOS_NATIVE_LIBRARY="<%= @node[:datanamix][:mesos][:home] %>"
 
 # (Optional) Extra classpath
 #export SPARK_LIBRARY_PATH=""

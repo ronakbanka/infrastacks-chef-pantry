@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: appliv-io-cdh4
-# Recipe:: [Setup Appliv-IO]
+# Cookbook Name:: datanamix
+# Recipe:: [Setup Datanamix]
 #
-# Copyright 2012, InfraStacks,LLC  engineering@infrastacks.com
+# Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,5 +16,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
+template "spark-worker" do
+  path "/etc/init/spark-worker.conf"
+  source "spark-worker-init.conf.erb"
+  owner "root"
+  group "root"
+  mode "0755"
+  notifies :enable, "service[spark-worker]"
+  notifies :start, "service[spark-worker]"
+end
+
+service "spark-worker" do
+    provider Chef::Provider::Service::Upstart
+    supports :status => true, :restart => true
+    action [:enable, :start]
+end 
 
 

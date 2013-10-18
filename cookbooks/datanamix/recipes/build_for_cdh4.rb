@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: appliv-io-cdh4
-# Recipe:: [Setup Appliv-IO Package Builder]
+# Cookbook Name:: datanamix
+# Recipe:: [Setup Appliv Datanamix Package Builder]
 #
 # Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #
@@ -82,20 +82,20 @@ end
 script "Setup Dependencies" do
   interpreter "bash"
   code <<-EOH
-  sudo mkdir -p /opt/appliv-io-cdh4/component
-  sudo mkdir -p /opt/appliv-io-cdh4/deps
-  tar -zxvf /tmp/scala-2.9.3.tgz -C /opt/appliv-io-cdh4/deps
-  tar -zxvf /tmp/hive-0.9.0-bin.tar.gz -C /opt/appliv-io-cdh4/deps
+  sudo mkdir -p /opt/datanamix/component
+  sudo mkdir -p /opt/datanamix/deps
+  tar -zxvf /tmp/scala-2.9.3.tgz -C /opt/datanamix/deps
+  tar -zxvf /tmp/hive-0.9.0-bin.tar.gz -C /opt/datanamix/deps
   EOH
-  #not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating") }
+  #not_if { File.exists?("/home/vagrant/datanamix-build/spark-#{appliv_io_spark_dist}-incubating") }
 end
 
 
 script "Setup Spark Build Environment" do
   interpreter "bash"
   code <<-EOH
-  mkdir -p /home/vagrant/appliv-io-cdh4-build
-  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/appliv-io-cdh4-build
+  mkdir -p /home/vagrant/datanamix-build
+  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/datanamix-build
   EOH
   not_if { File.exists?("/home/vagrant/spark-#{appliv_io_spark_dist}-incubating") }
 end
@@ -104,23 +104,23 @@ end
 script "Setup Shark Build Environment" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/appliv-io-cdh4-build/
+  cd /home/vagrant/datanamix-build/
   sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.0
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.0") }
 end
 
 script "Setup Mesos Build Environment" do
   interpreter "bash"
   code <<-EOH
-  sudo tar -zxvf /tmp/mesos-0.13.0.tar.gz -C /home/vagrant/appliv-io-cdh4-build
+  sudo tar -zxvf /tmp/mesos-0.13.0.tar.gz -C /home/vagrant/datanamix-build
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/mesos-0.13.0") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/mesos-0.13.0") }
 end
 
 
 template "shark-env.sh" do
-  path "/home/vagrant/appliv-io-cdh4-build/shark-0.8.0/conf/shark-env.sh"
+  path "/home/vagrant/datanamix-build/shark-0.8.0/conf/shark-env.sh"
   source "shark-env.sh.erb"
   # owner "root"
   # group "root"
@@ -128,7 +128,7 @@ template "shark-env.sh" do
 end
 
 template "SharkBuild.scala" do
-  path "/home/vagrant/appliv-io-cdh4-build/shark-0.8.0/project/SharkBuild.scala"
+  path "/home/vagrant/datanamix-build/shark-0.8.0/project/SharkBuild.scala"
   source "SharkBuild.scala.erb"
   # owner "root"
   # group "root"
@@ -138,55 +138,55 @@ end
 script "Building Spark for CDH4" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/appliv-io-cdh4-build/spark-#{appliv_io_spark_dist}-incubating
+  cd /home/vagrant/datanamix-build/spark-#{appliv_io_spark_dist}-incubating
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
   sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
-  sudo tar -zxvf spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz -C /opt/appliv-io-cdh4/component/
+  sudo tar -zxvf spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz -C /opt/datanamix/component/
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
 end
 
 
 script "Building Shark for CDH4" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/appliv-io-cdh4-build/shark-0.8.0
+  cd /home/vagrant/datanamix-build/shark-0.8.0
   sudo sbt/sbt compile
-  cd /home/vagrant/appliv-io-cdh4-build
+  cd /home/vagrant/datanamix-build
   sudo tar -zcvf shark-0.8.0.tar.gz shark-0.8.0
-  sudo tar -zxvf shark-0.8.0.tar.gz -C /opt/appliv-io-cdh4/component/
+  sudo tar -zxvf shark-0.8.0.tar.gz -C /opt/datanamix/component/
   EOH
-  not_if { File.exists?("/home/vagrant/appliv-io-cdh4-build/shark-0.8.0.tar.gz") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.0.tar.gz") }
 end
 
 
 script "Building Mesos for CDH4" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/appliv-io-cdh4-build/mesos-0.13.0
-  sudo ./configure --prefix=/opt/appliv-io-cdh4/component/mesos-0.13.0
+  cd /home/vagrant/datanamix-build/mesos-0.13.0
+  sudo ./configure --prefix=/opt/datanamix/component/mesos-0.13.0
   sudo make clean
   sudo make
   sudo make install
   EOH
-  not_if { File.exists?("/opt/appliv-io-cdh4/component/mesos-0.13.0") }
+  not_if { File.exists?("/opt/datanamix/component/mesos-0.13.0") }
 end
 
 
 script "Packaging appliv-io for CDH4" do
   interpreter "bash"
   code <<-EOH
-  sudo mkdir -p /home/vagrant/appliv-io-cdh4-build/pkg
-  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/conf /opt/appliv-io-cdh4
-  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/bin  /opt/appliv-io-cdh4
-  fpm --verbose --package /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb --workdir /home/vagrant/appliv-io-cdh4-build/pkg/ \
-  -s dir -t deb -n appliv-io-cdh4 -v 0.0.1-beta -m engineering@appliv.io \
+  sudo mkdir -p /home/vagrant/datanamix-build/pkg
+  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/conf /opt/datanamix
+  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/bin  /opt/datanamix
+  fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.deb --workdir /home/vagrant/datanamix-build/pkg/ \
+  -s dir -t deb -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
   --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
   --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
-  --post-install="/opt/appliv-io-cdh4/conf/setsenv.sh" -C /home/vagrant/appliv-io-cdh4-build/ /opt/appliv-io-cdh4/ 
-  sudo mv  /home/vagrant/appliv-io-cdh4_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg
+  --post-install="/opt/datanamix/conf/setsenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/ 
+  sudo mv  /home/vagrant/datanamix_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg
   EOH
-  not_if { File.exists?("/home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg/appliv-io-cdh4_0.0.1-beta_amd64.deb") }
+  not_if { File.exists?("/home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg/datanamix_0.0.1-beta_amd64.deb") }
 end
 

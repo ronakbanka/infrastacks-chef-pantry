@@ -2,7 +2,7 @@
 # Cookbook Name:: datanamix
 # Recipe:: [Setup Appliv Datanamix Package Builder]
 #
-# Copyright 2013, Appliv,LLC  engineering@Appliv.io
+# Copyright 2013, InfraStacks,LLC  engineering@Appliv.io
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -236,7 +236,7 @@ when "debian", "ubuntu"
     sudo cp -r /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/conf /opt/datanamix
     sudo cp -r /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/bin  /opt/datanamix
     fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.deb --workdir /home/vagrant/datanamix-build/pkg/ \
-    -s dir -t deb -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
+    -s dir -t deb -n datanamix -v 0.0.1-beta -m engineering@infrastacks.com \
     --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
     --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
     --post-install="/opt/datanamix/conf/setenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/
@@ -249,7 +249,7 @@ when "redhat", "centos", "fedora"
     interpreter "bash"
     code <<-EOH
     fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.rpm --workdir /home/vagrant/datanamix-build/pkg/ \
-    -s dir -t rpm -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
+    -s dir -t rpm -n datanamix -v 0.0.1-beta -m engineering@infrastacks.com \
     --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
     --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
     --post-install="/opt/datanamix/conf/setenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/

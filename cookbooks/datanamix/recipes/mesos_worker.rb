@@ -2,7 +2,7 @@
 # Cookbook Name:: datanamix
 # Recipe:: [Setup a Mesos Resource Manager Environment - worker]
 #
-# Copyright 2013, Appliv,LLC  engineering@appliv.io
+# Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

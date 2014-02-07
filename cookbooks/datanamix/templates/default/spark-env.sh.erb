@@ -14,9 +14,11 @@ export MESOS_NATIVE_LIBRARY=<%= @node[:datanamix][:mesos][:lib] %>
 #
 # If using the standalone deploy mode, you can also set variables for it here:
 # - SPARK_MASTER_IP, to bind the master to a different IP address or hostname
-export SPARK_MASTER_IP=<%= @node[:datanamix][:spark][:master] %>
+export SPARK_MASTER_IP=<%= @node[:datanamix][:spark_master ][:addr] %>
 # - SPARK_MASTER_PORT / SPARK_MASTER_WEBUI_PORT, to use non-default ports
 # - SPARK_WORKER_CORES, to set the number of cores to use on this machine
 # - SPARK_WORKER_MEMORY, to set how much memory to use (e.g. 1000m, 2g)
 # - SPARK_WORKER_PORT / SPARK_WORKER_WEBUI_PORT
 # - SPARK_WORKER_INSTANCES, to set the number of worker processes per node
+# Java options
+export JAVA_HOME="<%= @node[:datanamix][:java_home] %>"

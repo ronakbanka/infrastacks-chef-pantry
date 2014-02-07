@@ -4,7 +4,7 @@ maintainer_email  "cookbooks@opscode.com"
 license           "Apache 2.0"
 description       "Installs and configures postgresql for clients or servers"
 long_description  IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version           "2.4.1"
+version           IO.read(File.join(File.dirname(__FILE__), 'VERSION'))
 recipe            "postgresql", "Includes postgresql::client"
 recipe            "postgresql::ruby", "Installs pg gem for Ruby bindings"
 recipe            "postgresql::client", "Installs postgresql client package(s)"
@@ -20,6 +20,4 @@ end
   supports el, ">= 6.0"
 end
 
-depends "apt"
-depends "build-essential"
 depends "openssl"

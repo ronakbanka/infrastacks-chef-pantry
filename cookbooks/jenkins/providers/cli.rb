@@ -1,5 +1,6 @@
 #
 # Cookbook Name:: jenkins
+# Based on hudson
 # Provider:: cli
 #
 # Author:: Doug MacEachern <dougm@vmware.com>
@@ -21,18 +22,13 @@
 #
 
 def action_run
-  url = @new_resource.url || node['jenkins']['server']['url']
-  home = @new_resource.home || node['jenkins']['node']['home']
-  username = @new_resource.username ||  node['jenkins']['cli']['username']
-  password = @new_resource.password ||  node['jenkins']['cli']['password']
-  password_file = @new_resource.password_file ||  node['jenkins']['cli']['password_file']
-  key_file = @new_resource.key_file || node['jenkins']['cli']['key_file']
-  jvm_options = @new_resource.jvm_options || node['jenkins']['cli']['jvm_options']
+  url = @new_resource.url || node[:jenkins][:server][:url]
+  home = @new_resource.home || node[:jenkins][:worker][:home_dir]
 
   #recipes will chown to jenkins later if this doesn't already exist
   directory "home for jenkins-cli.jar" do
     action :create
-    path node['jenkins']['node']['home']
+    path node[:jenkins][:worker][:home_dir]
   end
 
   cli_jar = ::File.join(home, "jenkins-cli.jar")
@@ -41,36 +37,18 @@ def action_run
     not_if { ::File.exists?(cli_jar) }
   end
 
-  java_home = node['jenkins']['java_home'] || (node.attribute?('java') ? node['java']['jdk_dir'] : nil)
+  java_home = node[:java][:java_home] || (node.has_key?(:java) ? node[:java][:jdk_dir] : nil)
   if java_home == nil
     java = "java"
   else
     java = ::File.join(java_home, "bin", "java")
   end
-  if jvm_options
-    java << " #{jvm_options}"
-  end
 
-  if key_file
-    command = "#{java} -jar #{cli_jar} -i #{key_file} -s #{url} #{@new_resource.command}"
-  else
-    command = "#{java} -jar #{cli_jar} -s #{url} #{@new_resource.command}"
-  end
+  command = "#{java} -jar #{cli_jar} -s #{url} #{@new_resource.command}"
 
-  if username
-    command << " --username #{username}"
+  jenkins_execute command do
+    cwd home
+    block { |stdout| new_resource.block.call(stdout) } if new_resource.block
+    only_if new_resource.only_if
   end
-  if password
-    command << " --password #{password}"
-  end
-  if password_file
-    command << " --password_file #{password_file}"
-  end
-
-  je = jenkins_execute command do
-        cwd home
-        block { |stdout| new_resource.block.call(stdout) } if new_resource.block
-      end
-
-  new_resource.updated_by_last_action(je.updated?)
 end

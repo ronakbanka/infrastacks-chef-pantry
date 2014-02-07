@@ -32,11 +32,6 @@ if node[:ec2]
   end
 
   ebs_vol_dev = node['mysql']['ebs_vol_dev']
-  if (platform?("ubuntu") && node['platform_version'].to_f >= 11.04)
-    ebs_vol_dev_mount =  ebs_vol_dev.sub(/^\/dev\/sd/, "/dev/xvd")
-  else
-    ebs_vol_dev_mount = ebs_vol_dev
-  end
   ebs_vol_id = String.new
   db_type = String.new
   db_role = String.new
@@ -44,22 +39,20 @@ if node[:ec2]
   slave_role = String.new
   root_pw = String.new
   snapshots_to_keep = String.new
-  snapshot_cron_schedule = "00 * * * *" # default to hourly snapshots
 
   search(:apps) do |app|
     if (app["database_master_role"] & node.run_list.roles).length == 1 || (app["database_slave_role"] & node.run_list.roles).length == 1
-      master_role = app["database_master_role"] & node.run_list.roles
-      slave_role = app["database_slave_role"] & node.run_list.roles
+      master_role = app["database_master_role"]
+      slave_role = app["database_slave_role"]
       root_pw = app["mysql_root_password"][node.chef_environment]
       snapshots_to_keep = app["snapshots_to_keep"][node.chef_environment]
-      snapshot_cron_schedule = app["snapshot_cron_schedule"][node.chef_environment] if app["snapshot_cron_schedule"] && app["snapshot_cron_schedule"][node.chef_environment]
 
       if (master_role & node.run_list.roles).length == 1
         db_type = "master"
-        db_role = RUBY_VERSION.to_f <= 1.8 ? master_role : master_role.join
+        db_role = master_role
       elsif (slave_role & node.run_list.roles).length == 1
         db_type = "slave"
-        db_role = RUBY_VERSION.to_f <= 1.8 ? slave_role : slave_role.join
+        db_role = slave_role
       end
 
       Chef::Log.info "database::ebs_volume - db_role: #{db_role} db_type: #{db_type}"
@@ -170,8 +163,7 @@ if node[:ec2]
       source "chef-solo-database-snapshot.cron.erb"
       variables(
         :json_attribs => "/etc/chef/chef-solo-database-snapshot.json",
-        :config_file => "/etc/chef/chef-solo-database-snapshot.rb",
-        :schedule => snapshot_cron_schedule
+        :config_file => "/etc/chef/chef-solo-database-snapshot.rb"
       )
       owner "root"
       group "root"
@@ -179,8 +171,8 @@ if node[:ec2]
     end
   end
 
-    execute "mkfs.xfs #{ebs_vol_dev_mount}" do
-      only_if "xfs_admin -l #{ebs_vol_dev_mount} 2>&1 | grep -qx 'xfs_admin: #{ebs_vol_dev_mount} is not a valid XFS filesystem (unexpected SB magic number 0x00000000)'"
+    execute "mkfs.xfs #{ebs_vol_dev}" do
+      only_if "xfs_admin -l #{ebs_vol_dev} 2>&1 | grep -qx 'xfs_admin: #{ebs_vol_dev} is not a valid XFS filesystem (unexpected SB magic number 0x00000000)'"
     end
 
   %w{ec2_path data_dir}.each do |dir|
@@ -190,7 +182,7 @@ if node[:ec2]
   end
 
   mount node['mysql']['ec2_path'] do
-    device ebs_vol_dev_mount
+    device ebs_vol_dev
     fstype "xfs"
     action :mount
   end

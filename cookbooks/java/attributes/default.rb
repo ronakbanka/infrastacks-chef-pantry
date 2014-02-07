@@ -1,7 +1,7 @@
 #
 # Author:: Seth Chisamore (<schisamo@opscode.com>)
 # Cookbook Name:: java
-# Attributes:: default
+# Attributes:: default 
 #
 # Copyright 2010, Opscode, Inc.
 #
@@ -18,7 +18,7 @@
 # limitations under the License.
 
 # remove the deprecated Ubuntu jdk packages
-default['java']['remove_deprecated_packages'] = true
+default['java']['remove_deprecated_packages'] = false
 
 # default jdk attributes
 default['java']['install_flavor'] = "openjdk"
@@ -33,28 +33,24 @@ when "freebsd"
 when "arch"
   default['java']['java_home'] = "/usr/lib/jvm/java-#{java['jdk_version']}-openjdk"
 else
-  default['java']['java_home'] = "/usr/lib/jvm/default-java"
+  #default['java']['java_home'] = "/usr/lib/jvm/default-java"
+  default['java']['java_home'] = "/usr/lib/jvm/java-#{java['jdk_version']}-openjdk-amd64"
 end
-
-# if you change this to true, you can download directly from Oracle
-default['java']['oracle']['accept_oracle_download_terms'] = true
-
-# direct download paths for oracle, you have been warned!
 
 # jdk6 attributes
 # x86_64
-default['java']['jdk']['6']['x86_64']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/6u37-b06/jdk-6u37-linux-x64.bin'
-default['java']['jdk']['6']['x86_64']['checksum'] = '51d594cec29948bdf58918ba802a872826bc7caae3f0aada42b65eacdc14a7f4'
+default['java']['jdk']['6']['x86_64']['url'] = 'http://download.example.com/otn-pub/java/jdk/6u30-b12/jdk-6u30-linux-x64.bin'
+default['java']['jdk']['6']['x86_64']['checksum'] = '928220f4e46c5dabef0440791c48023945629d8a23998e072157e04960d8a759'
 
 # i586
-default['java']['jdk']['6']['i586']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/6u37-b06/jdk-6u37-linux-i586.bin'
-default['java']['jdk']['6']['i586']['checksum'] = '44cc51ed452a08a3e0b4e397922832607161642e5a6e206f256af86f8fbaae90'
+default['java']['jdk']['6']['i586']['url'] = 'http://download.example.com/otn-pub/java/jdk/6u30-b12/jdk-6u30-linux-i586.bin'
+default['java']['jdk']['6']['i586']['checksum'] = 'b551be83a690bc9fec0107d9aa4f828cd47e150fa54cbedbfa8f80c99e2f18b5'
 
 # jdk7 attributes
 # x86_64
-default['java']['jdk']['7']['x86_64']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/7u9-b05/jdk-7u9-linux-x64.tar.gz'
-default['java']['jdk']['7']['x86_64']['checksum'] = '1b39fe2a3a45b29ce89e10e59be9fbb671fb86c13402e29593ed83e0b419c8d7'
+default['java']['jdk']['7']['x86_64']['url'] = 'http://download.example.com/otn-pub/java/jdk/7u2-b13/jdk-7u2-linux-x64.tar.gz'
+default['java']['jdk']['7']['x86_64']['checksum'] = '411a204122c5e45876d6edae1a031b718c01e6175833740b406e8aafc37bc82d'
 
 # i586
-default['java']['jdk']['7']['i586']['url'] = 'http://download.oracle.com/otn-pub/java/jdk/7u9-b05/jdk-7u9-linux-i586.tar.gz'
-default['java']['jdk']['7']['i586']['checksum'] = '47e86ceb7f59c821a8d0c54f34530bca84e10c1849ed46da7f4fdb5f621bc8d6'
+default['java']['jdk']['7']['i586']['url'] = 'http://download.example.com/otn-pub/java/jdk/7u2-b13/jdk-7u2-linux-i586.tar.gz'
+default['java']['jdk']['7']['i586']['checksum'] = '74faad48fef2c368276dbd1fd6c02520b0e9ebdcb1621916c1af345fc3ba65d1'

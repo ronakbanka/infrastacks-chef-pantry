@@ -18,11 +18,13 @@
 # limitations under the License.
 #
 
+#include_recipe "database::config_files"
 include_recipe "mysql::ruby"
 
+#mysql_server = discover(:'mysql', :mysql_server).private_ip
 
 # create a mysql database
-mysql_database "#{node['hortonworks_hdp']['mysql']['hivedb']}" do
+mysql_database "#{node['cloudera_cdh']['mysql']['hivedb']}" do
   connection ({:host => "localhost", :username => 'root', :password => node['mysql']['server_root_password']})
   action :create
 end
@@ -36,7 +38,7 @@ mysql_connection_info = {:host => "localhost",
 
 
 # Create a the hive_db user but grant no privileges
-mysql_database_user "#{node['hortonworks_hdp']['mysql']['hivedb_user_name']}" do
+mysql_database_user "#{node['cloudera_cdh']['mysql']['hivedb_user_name']}" do
   connection mysql_connection_info
   password "#{node['mysql']['hivedb_user_password']}"
   action :create
@@ -44,10 +46,10 @@ end
 
 # Grant privileges to hive_db
 
-mysql_database_user "#{node['hortonworks_hdp']['mysql']['hivedb_user_name']}" do
+mysql_database_user "#{node['cloudera_cdh']['mysql']['hivedb_user_name']}" do
   connection mysql_connection_info
-  password "#{node['hortonworks_hdp']['mysql']['hivedb_user_password']}"
-  database_name "#{node['hortonworks_hdp']['mysql']['hivedb']}"
+  password "#{node['cloudera_cdh']['mysql']['hivedb_user_password']}"
+  database_name "#{node['cloudera_cdh']['mysql']['hivedb']}"
   privileges [:all]
   action :grant
 end

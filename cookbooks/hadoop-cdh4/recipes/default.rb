@@ -31,7 +31,8 @@
 # master-hadoop node
 # on the master node3) 127.0.0.1 (default)
 
-include_recipe "java::oracle"
+
+include_recipe "java::openjdk"
 include_recipe "apt::default"
 
 package "wget" do
@@ -48,7 +49,7 @@ end
 # elsif conditions.all? { | cond | node[:cloudera_cdh][:hadoop_network_interface] != cond }
 #   query = "role:hadoop-master AND chef_environment:#{node.chef_environment}"
 #   result, _, _ = Chef::Search::Query.new.search(:node, query)
-#   # If we got no results, assume this is the master. 
+#   # If we got no results, assume this is the master.
 #   if result == [] && node.run_list.any?{|t| t == 'role[hadoop-master]'}
 #     results = [node]
 #   end
@@ -58,7 +59,7 @@ end
 #       break
 #     end
 #   end
-# else 
+# else
 #   $master_node_ip = '127.0.0.1'
 # end
 
@@ -68,24 +69,26 @@ end
 # Strips out any open files limits and replaces it with a big number
 configmunge "increase open files limit" do
   config_file "/etc/security/limits.conf"
-  filter /^[^#].*nofile/ 
+  filter /^[^#].*nofile/
   appended_configs ["*  hard  nofile  #{node[:cloudera_cdh][:nofiles]}\n"]
 end
 
 
-# CDH4 requires a little more than 2x swap to vmm size (we use 
+# Disabling swap file creation as it takes way too much time on ec2!
+#
+# CDH4 requires a little more than 2x swap to vmm size (we use
 # system memory to be safe. This swap doesn't
 # get used, just reserved during spawning.
 
-total_memory = Integer(node[:memory][:total].sub("kB", ''))
-total_swap = Integer(node[:memory][:swap][:total].sub("kB", ''))
-swapsize_raw = total_memory * 2.25 - total_swap
-$swapsize = ((swapsize_raw * 2).round / 2.0).floor
+# total_memory = Integer(node[:memory][:total].sub("kB", ''))
+# total_swap = Integer(node[:memory][:swap][:total].sub("kB", ''))
+# swapsize_raw = total_memory * 2.25 - total_swap
+# $swapsize = ((swapsize_raw * 2).round / 2.0).floor
 
-swapfile "create swapfile" do
-  swapfile_location node[:cloudera_cdh][:swapfile_location]
-  swapsize $swapsize
-end
+# swapfile "create swapfile" do
+#   swapfile_location node[:cloudera_cdh][:swapfile_location]
+#   swapsize $swapsize
+# end
 
 # Disable IPTables
 # There isn't a reliable way to manage iptables w/o monitoring. Please
@@ -132,22 +135,22 @@ execute "update package index" do
   action :run
 end.run_action(:run)
 
-execute "apt-get-update-periodic" do
-  command "apt-get update"
-  ignore_failure true
-  only_if do
-    File.exists?('/var/lib/apt/periodic/update-success-stamp') &&
-    File.mtime('/var/lib/apt/periodic/update-success-stamp') < Time.now - 86400
-  end
-end
+# execute "apt-get-update-periodic" do
+#   command "apt-get update"
+#   ignore_failure true
+#   only_if do
+#     File.exists?('/var/lib/apt/periodic/update-success-stamp') &&
+#     File.mtime('/var/lib/apt/periodic/update-success-stamp') < Time.now - 86400
+#   end
+# end
 
 
-%w'hadoop-client 
+%w'hadoop-client
 libhdfs0
-libhdfs0-dev 
+libhdfs0-dev
 libsnappy1
-libsnappy-dev 
-openssl 
+libsnappy-dev
+openssl
 hadoop-lzo-cdh4-mr1
 hadoop-lzo-cdh4'.each do | pack |
   package pack do
@@ -183,13 +186,13 @@ end
 
 # Install base configuration (will be the same on every install)
 
-%w'capacity-scheduler.xml 
-configuration.xsl 
-fair-scheduler.xml 
-hadoop-env.sh 
-hadoop-policy.xml 
-log4j.properties 
-mapred-queue-acls.xml 
+%w'capacity-scheduler.xml
+configuration.xsl
+fair-scheduler.xml
+hadoop-env.sh
+hadoop-policy.xml
+log4j.properties
+mapred-queue-acls.xml
 hadoop-metrics.properties
 hadoop-metrics2.properties
 taskcontroller.cfg'.each do | f |

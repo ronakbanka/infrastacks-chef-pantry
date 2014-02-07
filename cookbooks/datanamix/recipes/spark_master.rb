@@ -2,7 +2,7 @@
 # Cookbook Name:: datanamix
 # Recipe:: [Setup Datanamix]
 #
-# Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
+# Copyright 2013, Appliv,LLC  engineering@appliv.io
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,20 @@
 # limitations under the License.
 #
 
+include_recipe "datanamix::config_files"
+
+announce(:datanamix, :spark_master)
+node.set[:datanamix][:spark_master][:addr] = discover(:datanamix, :spark_master).private_ip
+
+template "/opt/datanamix/component/spark-0.8.1-incubating/conf/spark-env.sh" do
+  source "spark-env.sh.erb"
+  mode 0644
+end
+
+template "/opt/datanamix/component/spark-0.8.1-incubating/bin/spark-master.sh" do
+  source "spark-master.sh.erb"
+  mode 0755
+end
 
 template "spark-master" do
   path "/etc/init/spark-master.conf"
@@ -25,13 +39,11 @@ template "spark-master" do
   group "root"
   mode "0755"
   notifies :enable, "service[spark-master]"
-  notifies :start, "service[spark-master]"
 end
 
 service "spark-master" do
     provider Chef::Provider::Service::Upstart
     supports :status => true, :restart => true
-    action [:enable, :start]
-end 
-
+    action [:enable, :restart]
+end
 

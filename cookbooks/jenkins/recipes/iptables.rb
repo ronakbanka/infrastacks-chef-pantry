@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: jenkins
-# Recipe:: iptables
-#
-# Author:: Fletcher Nichol <fnichol@nichol.ca>
+# Cookbook Name::       jenkins
+# Description::         Set up ip_tables to allow access to the daemons
+# Recipe::              iptables
+# Author::              Fletcher Nichol <fnichol@nichol.ca>
 #
 # Copyright 2011, Fletcher Nichol.
 #
@@ -19,13 +19,10 @@
 # limitations under the License.
 #
 
-if platform_family?("debian", "rhel")
-  include_recipe "iptables"
+if platform?("redhat","centos","debian","ubuntu")
+  include_recipe 'iptables'
   iptables_rule "port_jenkins" do
-    if node['jenkins']['iptables_allow'] == "enable"
-      enable true
-    else
-      enable false
-    end
+    enable        (node[:jenkins][:iptables_allow] == "enable")
+    variables     :jenkins => node[:jenkins]
   end
 end

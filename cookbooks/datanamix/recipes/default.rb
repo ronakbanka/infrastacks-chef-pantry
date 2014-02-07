@@ -1,8 +1,8 @@
 #
 # Cookbook Name:: datanamix
-# Recipe:: [Setup Datanamix]
+# Recipe:: [Setup Datanamix core components]
 #
-# Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
+# Copyright 2013, Appliv,LLC  engineering@appliv.io
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,25 @@
 package "upstart"
 package "libunwind7"
 package "libunwind7-dev"
+package "libsnappy-dev"
 
-include_recipe "java::oracle"
+include_recipe "java::openjdk"
+
 
 datanamix_path = node[:datanamix][:wget_path]
 datanamix_dist = node[:datanamix][:dist]
+
+user "mesos" do
+  comment "Mesos system account"
+  system true
+  shell "/sbin/nologin"
+end
+
+user "spark" do
+  comment "Spark system account"
+  system true
+  shell "/sbin/nologin"
+end
 
 remote_file "/opt/#{datanamix_dist}.deb" do
   source "#{datanamix_path}"
@@ -32,43 +46,28 @@ remote_file "/opt/#{datanamix_dist}.deb" do
 end
 
 
-# script "Installing datanamix" do
-#   interpreter "bash"
-#   code <<-EOH
-#   dpkg -i /opt/#{appliv_ds_dist}.deb
-#   EOH
-#   not_if { 'dpkg --list | egrep datanamix' }
-# end
-
-# execute "Installing datanamix" do
-#   command "dpkg -i /opt/#{appliv_ds_dist}.deb"
-#   not_if { 'dpkg --list | egrep datanamix' }
-# end
-
-dpkg_package "datanamix" do
+package "datanamix" do
+  provider Chef::Provider::Package::Dpkg
   source "/opt/#{datanamix_dist}.deb"
   action :install
 end
 
-
-template "/opt/datanamix/component/spark-0.8.0-incubating/conf/spark-env.sh" do
-  source "spark-env.sh.erb"
-  mode 0644
+script "Setting Permissions" do
+  interpreter "bash"
+  user "root"
+  code <<-EOH
+  chown -R spark:spark /opt/datanamix/component/spark-0.8.1-incubating
+  chown -R mesos:mesos /opt/datanamix/component/mesos-0.14.2
+  EOH
 end
 
-
-template "/opt/datanamix/component/shark-0.7.0/conf/shark-env.sh" do
+template "/opt/datanamix/component/shark-0.8.1/conf/shark-env.sh" do
   source "shark-env.sh.erb"
   mode 0644
 end
-template "/opt/datanamix/component/spark-0.8.0-incubating/bin/spark-worker.sh" do
-  source "spark-worker.sh.erb"
-  mode 0755
-end
 
-template "/opt/datanamix/component/spark-0.8.0-incubating/bin/spark-master.sh" do
-  source "spark-master.sh.erb"
-  mode 0755
-end
+
+
+
 
 

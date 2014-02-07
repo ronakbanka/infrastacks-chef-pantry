@@ -1,5 +1,6 @@
 #
 # Cookbook Name:: jenkins
+# Based on hudson
 # Library:: manage_node
 #
 # Author:: Doug MacEachern <dougm@vmware.com>
@@ -26,7 +27,7 @@ def jenkins_node_defaults(args)
   args[:remote_fs] ||= nil #required
   args[:executors] ||= 1
   args[:mode] ||= "NORMAL" #"NORMAL" or "EXCLUSIVE"
-  args[:labels] ||= []
+  args[:labels] ||= ""
   args[:launcher] ||= "jnlp" #"jnlp" or "command" or "ssh"
   args[:availability] ||= "Always" #"Always" or "Demand"
   args[:env] = args[:env] ? args[:env].to_hash : nil
@@ -80,7 +81,7 @@ def jenkins_node_manage(args)
 
   if args[:env]
     map = args[:env].collect { |k,v| %Q("#{k}":"#{v}") }.join(",")
-    env = "new hudson.EnvVars([#{map}])"
+    env = "new jenkins.EnvVars([#{map}])"
   else
     env = "null"
   end
@@ -112,8 +113,6 @@ def jenkins_node_manage(args)
   return <<EOF
 import jenkins.model.*
 import jenkins.slaves.*
-import hudson.model.*
-import hudson.slaves.*
 
 app = Jenkins.instance
 env = #{env}
@@ -121,7 +120,7 @@ props = []
 
 def new_ssh_launcher(args) {
   Jenkins.instance.pluginManager.getPlugin("ssh-slaves").classLoader.
-    loadClass("hudson.plugins.sshslaves.SSHLauncher").
+    loadClass("jenkins.plugins.sshslaves.SSHLauncher").
       getConstructor([String, int, String, String, String, String] as Class[]).newInstance(args)
 }
 
@@ -131,7 +130,7 @@ if (env != null) {
 }
 
 slave = new DumbSlave("#{args[:name]}", "#{args[:description]}", "#{remote_fs}",
-                      "#{args[:executors]}", Node.Mode.#{args[:mode]}, "#{args[:labels].join(" ")}",
+                      "#{args[:executors]}", Node.Mode.#{args[:mode]}, "#{args[:labels]}",
                        #{launcher},
                        new RetentionStrategy.#{args[:availability]}(#{rs_args}), props)
 

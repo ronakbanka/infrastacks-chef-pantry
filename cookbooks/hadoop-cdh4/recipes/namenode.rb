@@ -18,12 +18,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_recipe "hadoop-cdh4::config_files"
+
+announce(:'hadoop-cdh4', :'hadoop-cdh4-namenode')
+node.set[:cloudera_cdh][:namenode][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-namenode').private_ip
 
 package "hadoop-hdfs-namenode" do
   action :install
   options "--force-yes"
 end
-
 
 script "Setting Permissions for NameNode format" do
   interpreter "bash"
@@ -45,3 +48,5 @@ end
 service "hadoop-hdfs-namenode" do
   action [ :enable, :start ]
 end
+
+

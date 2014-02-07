@@ -1,5 +1,6 @@
 #
 # Cookbook Name:: jenkins
+# Based on hudson
 # Resource:: job
 #
 # Author:: Doug MacEachern <dougm@vmware.com>
@@ -30,15 +31,5 @@ def initialize(name, run_context=nil)
   super
   @action = :update
   @job_name = name
-  jenkins_node = jenkins_attributes_from_node(run_context)
-  @url = (jenkins_node[:server] && jenkins_node[:server][:url]) || "http://localhost:8080"
-end
-
-private
-
-def jenkins_attributes_from_node(run_context)
-  jenkins_attr = if run_context && run_context.node
-    run_context.node[:jenkins]
-  end
-  jenkins_attr || {}
+  @url = node[:jenkins][:server][:url]
 end

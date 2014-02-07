@@ -19,6 +19,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_recipe "hadoop-cdh4::config_files"
+
+node.set[:cloudera_cdh][:namenode][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-namenode').private_ip
+node.set[:cloudera_cdh][:jobtracker][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-jobtracker').private_ip
+node.set[:cloudera_cdh][:hiveserver][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-hiveserver2').private_ip
+
 
 hive_server_lib_path = node[:cloudera_cdh][:hiveserver][:lib]
 mysql_connector_java = node[:cloudera_cdh][:mysql][:jdbc_connector]
@@ -33,7 +39,7 @@ remote_file "#{hive_server_lib_path}/mysql-connector-java-5.1.9.jar" do
 end
 
 template "/etc/hive/conf/hive-site.xml" do
-  source "hive-site.xml.erb"
+  source "hive-site.xml.client.erb"
   owner "root"
   group "root"
   mode 0755

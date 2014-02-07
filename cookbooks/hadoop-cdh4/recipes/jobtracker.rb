@@ -19,6 +19,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_recipe "hadoop-cdh4::config_files"
+
+announce(:'hadoop-cdh4', :'hadoop-cdh4-jobtracker')
+node.set[:cloudera_cdh][:jobtracker][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-jobtracker').private_ip
+
+
 package "hadoop-0.20-mapreduce-jobtracker" do
   action :install
   options "--force-yes"

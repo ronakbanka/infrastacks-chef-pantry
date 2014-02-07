@@ -7,7 +7,7 @@
 
 # The java implementation to use.  Required.
 # export JAVA_HOME=/usr/lib/j2sdk1.5-sun
-export JAVA_HOME=/usr/lib/jvm/default-java
+export JAVA_HOME=<%= @node[:cloudera_cdh][:java_home] %>
 # Extra Java CLASSPATH elements.  Optional.
 # export HADOOP_CLASSPATH=
 

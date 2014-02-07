@@ -18,6 +18,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include_recipe "hadoop-cdh4::config_files"
+
+node.set[:cloudera_cdh][:namenode][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-namenode').private_ip
+
+
 package "hadoop-hdfs-datanode" do
   action :install
   options "--force-yes"

@@ -23,8 +23,16 @@
 
 case node.platform
 when "ubuntu", "debian"
-  package "unzip"
-  package "tar"
+%w'pkg-config 
+  	libtool 
+  	autoconf 
+  	automake 
+  	libzmq-dev '.each do | pack |
+ package pack do
+    action :install
+  end
+end
+
 when /mac_os_x/
   package "gnu-tar"
 end

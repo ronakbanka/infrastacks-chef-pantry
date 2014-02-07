@@ -2,7 +2,7 @@
 # Cookbook Name:: datanamix
 # Recipe:: [Setup Appliv Datanamix Package Builder]
 #
-# Copyright 2013, InfraStacks,LLC  engineering@infrastacks.com
+# Copyright 2013, Appliv,LLC  engineering@Appliv.io
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@
 # limitations under the License.
 #
 
-# Components
-# spark-0.8.0
-# shark-0.8.0
-# mesos-0.13.0
+# Build for Hadoop CDH4.5.0 without YARN (mrv1)
+# Components:
+# spark-0.8.1
+# shark-0.8.1
+# mesos-0.14.2
+
 
 
 execute "update package index" do
@@ -38,48 +40,77 @@ execute "apt-get-update-periodic" do
   end
 end
 
-package "upstart"
-package "libunwind7"
-package "libunwind7-dev"
-package "git"
-package "build-essential"
-package "python-dev"
-package "libcurl4-openssl-dev"
+
+%w'upstart
+libunwind7
+libunwind7-dev
+git
+build-essential
+python-dev
+libcurl4-openssl-dev
+autotools-dev
+libltdl-dev
+libtool
+autoconf
+autopoint'.each do | pack |
+  package pack do
+    action :install
+    options "--force-yes"
+  end
+end
+
 
 gem_package "fpm"
 
-include_recipe "java::openjdk"
+include_recipe "java"
 
-appliv_io_spark_dist = node[:appliv_io_cdh4][:dist]
-appliv_io_spark_wget_path = node[:appliv_io_cdh4][:wget_path]
-appliv_io_scala_wget_path = node[:appliv_io_cdh4][:scala][:wget_path]
-appliv_io_hive_wget_path = node[:appliv_io_cdh4][:hive][:wget_path]
-appliv_io_mesos_wget_path = node[:appliv_io_cdh4][:mesos][:wget_path]
+datanamix_spark_dist = node[:datanamix][:spark][:dist]
+datanamix_spark_wget_path = node[:datanamix][:spark][:wget_path]
+datanamix_scala_wget_path = node[:datanamix][:scala][:wget_path]
+datanamix_hive_wget_path = node[:datanamix][:hive][:wget_path]
+datanamix_mesos_wget_path = node[:datanamix][:mesos][:wget_path]
 
 
 remote_file "/tmp/scala-2.9.3.tgz" do
-  source "#{appliv_io_scala_wget_path}"
+  source "#{datanamix_scala_wget_path}"
   not_if { File.exists?("/tmp/scala-2.9.3.tgz") }
 end
 
 
-remote_file "/tmp/spark-#{appliv_io_spark_dist}.tgz" do
-  source "#{appliv_io_spark_wget_path}"
-  not_if { File.exists?("/tmp/spark-#{appliv_io_spark_dist}.tgz") }
+remote_file "/tmp/spark-#{datanamix_spark_dist}.tgz" do
+  source "#{datanamix_spark_wget_path}"
+  not_if { File.exists?("/tmp/spark-#{datanamix_spark_dist}.tgz") }
 end
 
 remote_file "/tmp/hive-0.9.0-bin.tar.gz" do
-  source "#{appliv_io_hive_wget_path}"
+  source "#{datanamix_hive_wget_path}"
   not_if { File.exists?("/tmp/hive-0.9.0-bin.tar.gz") }
 end
 
-remote_file "/tmp/mesos-0.13.0.tar.gz" do
-  source "#{appliv_io_mesos_wget_path}"
-  not_if { File.exists?("/tmp/mesos-0.13.0.tar.gz") }
+remote_file "/tmp/mesos-0.14.2.tar.gz" do
+  source "#{datanamix_mesos_wget_path}"
+  not_if { File.exists?("/tmp/mesos-0.14.2.tar.gz") }
+end
+
+remote_file "/tmp/automake-1.13.1.tar.gz" do
+  source "http://mirror.anl.gov/pub/gnu/automake/automake-1.13.1.tar.gz"
+  not_if { File.exists?("/tmp/automake-1.13.1.tar.gz") }
 end
 
 
-script "Setup Dependencies" do
+script "Setup Automake1.13" do
+  interpreter "bash"
+  code <<-EOH
+  sudo tar -zxvf /tmp/automake-1.13.1.tar.gz -C /usr/local/src
+  cd /usr/local/src/automake-1.13.1/
+  sudo ./configure && make
+  sudo make install
+  EOH
+  not_if { File.exists?("/opt//usr/local/src/automake-1.13.1") }
+end
+
+
+script "Setup Spark and Shark Dependencies" do
   interpreter "bash"
   code <<-EOH
   sudo mkdir -p /opt/datanamix/component
@@ -87,40 +118,42 @@ script "Setup Dependencies" do
   tar -zxvf /tmp/scala-2.9.3.tgz -C /opt/datanamix/deps
   tar -zxvf /tmp/hive-0.9.0-bin.tar.gz -C /opt/datanamix/deps
   EOH
-  #not_if { File.exists?("/home/vagrant/datanamix-build/spark-#{appliv_io_spark_dist}-incubating") }
+  not_if { File.exists?("/opt/datanamix/deps/scala-2.9.3") and File.exists?("/opt/datanamix/deps/hive-0.9.0-bin") }
 end
+
 
 
 script "Setup Spark Build Environment" do
   interpreter "bash"
   code <<-EOH
   mkdir -p /home/vagrant/datanamix-build
-  tar -zxvf /tmp/spark-#{appliv_io_spark_dist}.tgz -C /home/vagrant/datanamix-build
+  tar -zxvf /tmp/spark-#{datanamix_spark_dist}.tgz -C /home/vagrant/datanamix-build
   EOH
-  not_if { File.exists?("/home/vagrant/spark-#{appliv_io_spark_dist}-incubating") }
+  not_if { File.exists?("/home/vagrant/spark-#{datanamix_spark_dist}-incubating") }
 end
+
 
 
 script "Setup Shark Build Environment" do
   interpreter "bash"
   code <<-EOH
   cd /home/vagrant/datanamix-build/
-  sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.0
+  sudo git clone https://github.com/amplab/shark.git -b branch-0.8 shark-0.8.1
   EOH
-  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.0") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.1") }
 end
 
 script "Setup Mesos Build Environment" do
   interpreter "bash"
   code <<-EOH
-  sudo tar -zxvf /tmp/mesos-0.13.0.tar.gz -C /home/vagrant/datanamix-build
+  sudo tar -zxvf /tmp/mesos-0.14.2.tar.gz -C /home/vagrant/datanamix-build
   EOH
-  not_if { File.exists?("/home/vagrant/datanamix-build/mesos-0.13.0") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/mesos-0.14.2") }
 end
 
 
 template "shark-env.sh" do
-  path "/home/vagrant/datanamix-build/shark-0.8.0/conf/shark-env.sh"
+  path "/home/vagrant/datanamix-build/shark-0.8.1/conf/shark-env.sh"
   source "shark-env.sh.erb"
   # owner "root"
   # group "root"
@@ -128,65 +161,100 @@ template "shark-env.sh" do
 end
 
 template "SharkBuild.scala" do
-  path "/home/vagrant/datanamix-build/shark-0.8.0/project/SharkBuild.scala"
-  source "SharkBuild.scala.erb"
+  path "/home/vagrant/datanamix-build/shark-0.8.1/project/SharkBuild.scala"
+  source "SharkBuild.scala_CDH4.erb"
   # owner "root"
   # group "root"
   mode "0755"
 end
 
-script "Building Spark for CDH4" do
+
+# Disabling YARN as we use Mesos
+
+# script "Building Spark for cdh4.5.0" do
+#   interpreter "bash"
+#   code <<-EOH
+#   cd /home/vagrant/datanamix-build/spark-#{datanamix_spark_dist}-incubating
+#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.5.0 SPARK_YARN=true sbt/sbt clean compile
+#   sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.5.0 SPARK_YARN=true sbt/sbt assembly
+#   sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.5.0 --tgz --with-yarn
+#   sudo tar -zxvf spark-0.8.1-incubating-hadoop_2.0.0-cdh4.5.0-bin.tar.gz -C /opt/datanamix/component/
+#   EOH
+#   not_if { File.exists?("/home/vagrant/datanamix-build/spark-0.8.1-incubating/spark-0.8.1-incubating-hadoop_2.0.0-cdh4.5.0-bin.tar.gz") }
+# end
+
+script "Building Spark for cdh4.5.0" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/datanamix-build/spark-#{appliv_io_spark_dist}-incubating
-  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt compile
-  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.3.0 SPARK_YARN=true sbt/sbt assembly
-  sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.3.0 --tgz --with-yarn
-  sudo tar -zxvf spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz -C /opt/datanamix/component/
+  cd /home/vagrant/datanamix-build/spark-#{datanamix_spark_dist}-incubating
+  sudo sbt/sbt publish-local
+  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.5.0 SPARK_YARN=false sbt/sbt clean compile
+  sudo SPARK_HADOOP_VERSION=2.0.0-cdh4.5.0 SPARK_YARN=false sbt/sbt assembly
+  sudo ./make-distribution.sh --hadoop 2.0.0-cdh4.5.0 --tgz
+  sudo tar -zxvf spark-0.8.1-incubating-hadoop_2.0.0-cdh4.5.0-bin.tar.gz -C /opt/datanamix/component/
   EOH
-  not_if { File.exists?("/home/vagrant/datanamix-build/spark-0.8.0-incubating/spark-0.8.0-incubating-hadoop_2.0.0-cdh4.3.0-bin.tar.gz") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/spark-0.8.1-incubating/spark-0.8.1-incubating-hadoop_2.0.0-cdh4.5.0-bin.tar.gz") }
 end
 
 
-script "Building Shark for CDH4" do
+script "Building Shark for cdh4.5.0" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/datanamix-build/shark-0.8.0
+  cd /home/vagrant/datanamix-build/shark-0.8.1
   sudo sbt/sbt compile
   cd /home/vagrant/datanamix-build
-  sudo tar -zcvf shark-0.8.0.tar.gz shark-0.8.0
-  sudo tar -zxvf shark-0.8.0.tar.gz -C /opt/datanamix/component/
+  sudo tar -zcvf shark-0.8.1.tar.gz shark-0.8.1
+  sudo tar -zxvf shark-0.8.1.tar.gz -C /opt/datanamix/component/
   EOH
-  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.0.tar.gz") }
+  not_if { File.exists?("/home/vagrant/datanamix-build/shark-0.8.1.tar.gz") }
 end
 
 
-script "Building Mesos for CDH4" do
+# Patching Makefile.am due to snappy related compile errors. Needs a better fix! (TODO)
+# Requires Automake 1.13.1
+script "Building Mesos for cdh4.5.0" do
   interpreter "bash"
   code <<-EOH
-  cd /home/vagrant/datanamix-build/mesos-0.13.0
-  sudo ./configure --prefix=/opt/datanamix/component/mesos-0.13.0
+  cd /home/vagrant/datanamix-build/mesos-0.14.2
+  sudo wget https://s3.amazonaws.com/appliv.io/repo/patches/mesos/Makefile.am.patch -O src/Makefile.am.patch
+  sudo patch src/Makefile.am src/Makefile.am.patch
+  sudo ./configure --prefix=/opt/datanamix/component/mesos-0.14.2
   sudo make clean
   sudo make
   sudo make install
   EOH
-  not_if { File.exists?("/opt/datanamix/component/mesos-0.13.0") }
+  not_if { File.exists?("/opt/datanamix/component/mesos-0.14.2") }
 end
 
 
-script "Packaging appliv-io for CDH4" do
-  interpreter "bash"
-  code <<-EOH
-  sudo mkdir -p /home/vagrant/datanamix-build/pkg
-  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/conf /opt/datanamix
-  sudo cp -r /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/bin  /opt/datanamix
-  fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.deb --workdir /home/vagrant/datanamix-build/pkg/ \
-  -s dir -t deb -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
-  --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
-  --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
-  --post-install="/opt/datanamix/conf/setsenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/ 
-  sudo mv  /home/vagrant/datanamix_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg
-  EOH
-  not_if { File.exists?("/home/vagrant/dev/Org/InfraStacks/OpenSource/appliv-io/pkg/datanamix_0.0.1-beta_amd64.deb") }
+case node["platform"]
+when "debian", "ubuntu"
+ script "Packaging datanamix .deb for cdh4.5.0" do
+    interpreter "bash"
+    code <<-EOH
+    sudo mkdir -p /home/vagrant/datanamix-build/pkg
+    sudo cp -r /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/conf /opt/datanamix
+    sudo cp -r /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/bin  /opt/datanamix
+    fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.deb --workdir /home/vagrant/datanamix-build/pkg/ \
+    -s dir -t deb -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
+    --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
+    --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
+    --post-install="/opt/datanamix/conf/setenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/
+    sudo mv  /home/vagrant/datanamix_0.0.1-beta_amd64.deb /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/pkg
+    EOH
+    not_if { File.exists?("/home/vagrant/dev/Org/Appliv/OpenSource/datanamix/pkg/datanamix_0.0.1-beta_amd64.deb") }
+  end
+when "redhat", "centos", "fedora"
+  script "Packaging datanamix .rpm for cdh4.5.0" do
+    interpreter "bash"
+    code <<-EOH
+    fpm --verbose --package /home/vagrant/datanamix_0.0.1-beta_amd64.rpm --workdir /home/vagrant/datanamix-build/pkg/ \
+    -s dir -t rpm -n datanamix -v 0.0.1-beta -m engineering@appliv.io \
+    --description "Big Data Platform leveraging in-memory techniques based on the Open Source Amplabs Berkeley Data Analysis Stack"  \
+    --deb-compression bzip2 --license "Apache 2.0" --vendor "Appliv, LLC" --url "http://appliv.io" \
+    --post-install="/opt/datanamix/conf/setenv.sh" -C /home/vagrant/datanamix-build/ /opt/datanamix/
+    sudo mv  /home/vagrant/datanamix_0.0.1-beta_amd64.rpm /home/vagrant/dev/Org/Appliv/OpenSource/datanamix/pkg
+    EOH
+    not_if { File.exists?("/home/vagrant/dev/Org/Appliv/OpenSource/datanamix/pkg/datanamix_0.0.1-beta_amd64.rpm") }
+  end
 end
-

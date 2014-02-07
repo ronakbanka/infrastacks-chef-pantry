@@ -1,26 +1,8 @@
-## v1.6.4:
+## v1.6.1
+* Cleaning up oracle_via_webupd8 - fixing JVM and updating alternatives
 
-* [COOK-1930] - fixed typo in attribute for java 5 on i586
-
-## v1.6.2:
-
-* whyrun support in `java_ark` LWRP
-* CHEF-1804 compatibility
-* [COOK-1786]- install Java 6u37 and Java 7u9
-* [COOK-1819] -incorrect warning text about
-  `node['java']['oracle']['accept_oracle_download_terms']`
-
-## v1.6.0:
-
-* [COOK-1218] - Install Oracle JDK from Oracle download directly
-* [COOK-1631] - set JAVA_HOME in openjdk recipe
-* [COOK-1655] - Install correct architecture on Amazon Linux
-
-## v1.5.4:
-
-* [COOK-885] - update alternatives called on wrong file
-* [COOK-1607] - use shellout instead of execute resource to update
-  alternatives
+## v1.6.0
+* Adding oracle_via_webupd8, an Ubuntu-only install of Oracle java that satisfies package dependencies
 
 ## v1.5.2:
 

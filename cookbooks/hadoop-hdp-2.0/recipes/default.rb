@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: hadoop-hdp-2.0
-# Recipe:: [Install Hadoop HortonWorks HDP base compoments]
+# Recipe:: [Install Hadoop HortonWorks HDP 2.0 base compoments]
 #
 # Original Author: https://github.com/rackerlabs/hdp-cookbooks
 # Author: Murali Raju <murali.raju@appliv.com>
@@ -34,7 +34,7 @@
 package "wget" do
   action :install
 end
-include_recipe "java::oracle"
+include_recipe "java::openjdk"
 
 #The following has bugs. Commenting out until fix.
 
@@ -107,7 +107,8 @@ end
 
 
 execute "install HDP 2.0 repo package" do
-  command "wget -nv http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP-2.0.0.2/repos/centos6/hdp.repo -O /etc/yum.repos.d/hdp2.0.repo"
+  #command "wget -nv http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP-2.0.0.2/repos/centos6/hdp.repo -O /etc/yum.repos.d/hdp2.0.repo"
+  command "wget -nv http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo -O /etc/yum.repos.d/hdp2.0.repo"
   not_if do
     ::File.exists?("/etc/yum.repos.d/hdp2.0.repo")
   end
@@ -123,6 +124,7 @@ end
 %w'hadoop 
 hadoop 
 hadoop-mapreduce
+hadoop-yarn
 hadoop-libhdfs 
 snappy 
 snappy-devel 
@@ -219,16 +221,18 @@ template "/etc/hadoop/conf.chef/hdfs-site.xml" do
             })
 end
 
-template "/etc/hadoop/conf.chef/mapred-site.xml" do
-  source "mapred-site.xml.erb"
-  owner "root"
-  group "root"
-  mode 0755
-  variables({
-              :jobtracker_ip => $master_node_ip,
-              :jobtracker_port => node[:hortonworks_hdp][:jobtracker][:port]
-            })
-end
+# template "/etc/hadoop/conf.chef/mapred-site.xml" do
+#   source "mapred-site.xml.erb"
+#   owner "root"
+#   group "root"
+#   mode 0755
+#   variables({
+#               :jobtracker_ip => $master_node_ip,
+#               :jobtracker_port => node[:hortonworks_hdp][:jobtracker][:port]
+#             })
+# end
+
+
 
 
 ## Commented out later fix when FQDN is not present. Using manual hosts.erb for now

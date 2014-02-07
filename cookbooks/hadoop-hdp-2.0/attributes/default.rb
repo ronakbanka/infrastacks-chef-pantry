@@ -1,8 +1,13 @@
+#Global
 default[:hortonworks_hdp][:manage_all_config_files] = false
 default[:hortonworks_hdp][:nofiles] = 32768
 default[:hortonworks_hdp][:swapfile_location] = "/mnt/swapfile"
+default[:hortonworks_hdp][:java_home] = "/usr/lib/jvm/java-1.7.0-openjdk-amd64"
 
 
+
+#NameNode
+default[:hortonworks_hdp][:hdfs][:tmp_dir] = "/tmp"
 default[:hortonworks_hdp][:namenode][:host] = "hadoop-hdp2-node1"
 default[:hortonworks_hdp][:namenode][:port] = "8020"
 default[:hortonworks_hdp][:namenode][:safemode_min_datanodes] = 3
@@ -12,23 +17,18 @@ default[:hortonworks_hdp][:namenode][:hadoop_tmp_dir] = "/mnt/var/lib/hadoop/cac
 default[:hortonworks_hdp][:namenode][:dfs_name_dir_root] = "/mnt"
 
 #DataNode
-
 default[:hortonworks_hdp][:datanode][:dfs_data_dir] = "/mnt/var/lib/hadoop/cache/hdfs/dfs/data"  
 
 #Map Reduce
 default[:hortonworks_hdp][:jobtracker][:host] = "hadoop-hdp2-node2"
 default[:hortonworks_hdp][:jobtracker][:port] = "8021"
-# default[:hortonworks_hdp][:mapreduce][:mapred_child_java_opts] = "-server -Xmx2048m -Djava.net.preferIPv4Stack=true"
-# default[:hortonworks_hdp][:mapreduce][:mapred_map_child_java_opts] = "-server -Xmx2048m -Djava.net.preferIPv4Stack=true"
-# default[:hortonworks_hdp][:mapreduce][:mapred_reduce_child_java_opts] = "-server -Xmx4096m -Djava.net.preferIPv4Stack=true"
-
 default[:hortonworks_hdp][:mapreduce][:mapred_child_java_opts] = "-server -Xmx512m -Djava.net.preferIPv4Stack=true"
 default[:hortonworks_hdp][:mapreduce][:mapred_map_child_java_opts] = "-server -Xmx512m -Djava.net.preferIPv4Stack=true"
 default[:hortonworks_hdp][:mapreduce][:mapred_reduce_child_java_opts] = "-server -Xmx1024m -Djava.net.preferIPv4Stack=true"
 
 
-#HDFS
-default[:hortonworks_hdp][:hdfs][:tmp_dir] = "/tmp"
+#YARN
+default[:hortonworks_hdp][:yarn][:resource_manager] = "hadoop-hdp2-node2"
 
 
 #HiveServer2

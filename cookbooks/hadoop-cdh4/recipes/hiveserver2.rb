@@ -24,6 +24,11 @@
 # mkdir -p /media/ephemeral0/var/lib/hadoop/cache/hive
 # chown -R hive:hadoop /media/ephemeral0/var/lib/hadoop/cache/hive
 
+include_recipe "hadoop-cdh4::config_files"
+
+announce(:'hadoop-cdh4', :'hadoop-cdh4-hiveserver2')
+node.set[:cloudera_cdh][:hiveserver][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-hiveserver2').private_ip
+
 include_recipe "mysql::server"
 include_recipe "database::mysql"
 

@@ -3,10 +3,12 @@ description 'spark system startup'
 author 'Murali Raju'
 env NAME=SparkMaster
 env LOG_FILE=/var/log/spark-master.log
-env USER=root
+env USER=spark
 #env SPARK_WORKER_BIN=
-env SCRIPT_FILE=/opt/datanamix/component/spark-0.8.0-incubating/bin/spark-master.sh
-start on runlevel [2345] stop on runlevel [016]
+env SCRIPT_FILE=/opt/datanamix/component/spark-0.8.1-incubating/bin/spark-master.sh
+# start on runlevel [2345]
+start on filesystem and net-device-up IFACE!=lo
+stop on runlevel [016]
 # Respawn in case of a crash, with default parameters
 # respawn
 script

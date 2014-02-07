@@ -1,16 +1,10 @@
 #
-# Author:: AJ Christensen <aj@junglist.gen.nz>
-# Author:: Doug MacEachern <dougm@vmware.com>
-# Author:: Fletcher Nichol <fnichol@nichol.ca>
-# Author:: Seth Chisamore <schisamo@opscode.com>
-# Author:: Guilhem Lettron <guilhem.lettron@youscribe.com>
+# Cookbook Name::       jenkins
+# Description::         Server
+# Recipe::              server
+# Author::              Doug MacEachern <dougm@vmware.com>
 #
-# Cookbook Name:: jenkins
-# Recipe:: server
-#
-# Copyright 2010, VMware, Inc.
-# Copyright 2012, Opscode, Inc.
-# Copyright 2013, Youscribe.
+# Copyright 2010, VMware, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,91 +19,94 @@
 # limitations under the License.
 #
 
-include_recipe "java"
+include_recipe 'jenkins'
 
-user node['jenkins']['server']['user'] do
-  home node['jenkins']['server']['home']
+announce(:jenkins, :server,
+  :port => node[:jenkins][:server][:port],
+  :user => node[:jenkins][:server][:user]
+  )
+
+daemon_user('jenkins.server') do
+  shell         "/bin/sh"
+  home          node[:jenkins][:server][:home_dir]
+  manage_home   true
 end
 
-home_dir = node['jenkins']['server']['home']
-plugins_dir = File.join(home_dir, "plugins")
-log_dir = node['jenkins']['server']['log_dir']
-ssh_dir = File.join(home_dir, ".ssh")
-
-[
-  home_dir,
-  plugins_dir,
-  log_dir,
-  ssh_dir
-].each do |dir_name|
-  directory dir_name do
-    owner node['jenkins']['server']['user']
-    group node['jenkins']['server']['group']
-    mode '0700'
-    recursive true
-  end
+standard_dirs('jenkins.server') do
+  directories   :conf_dir, :pid_dir, :log_dir
 end
 
-execute "ssh-keygen -f #{File.join(ssh_dir, "id_rsa")} -N ''" do
-  user node['jenkins']['server']['user']
-  group node['jenkins']['server']['group']
-  not_if { File.exists?(File.join(ssh_dir, "id_rsa")) }
-  notifies :create, "ruby_block[store_server_ssh_pubkey]", :immediately
+directory node[:jenkins][:server][:home_dir] do
+  owner         node[:jenkins][:server][:user]
+  group         node[:jenkins][:server][:group]
+  mode          "0755"
+  action        :create
 end
 
-ruby_block "store_server_ssh_pubkey" do
-  block do
-    node.set['jenkins']['server']['pubkey'] = IO.read(File.join(ssh_dir, "id_rsa.pub"))
-    node.save unless Chef::Config[:solo]
-  end
-  action :nothing
+directory "#{node[:jenkins][:server][:home_dir]}/war" do
+  owner         node[:jenkins][:server][:user]
+  group         node[:jenkins][:server][:group]
+  mode          "0755"
+  action        :create
 end
 
-include_recipe "jenkins::_server_#{node['jenkins']['server']['install_method']}"
+package "jenkins"
 
-node['jenkins']['server']['plugins'].each do |plugin|
-  version = 'latest'
-  if plugin.is_a?(Hash)
-    name = plugin['name']
-    version = plugin['version'] if plugin['version']
-  else
-    name = plugin
+case node.platform
+when "ubuntu", "debian"
+
+  include_recipe 'runit'
+  package        "daemon"
+
+  template '/etc/default/jenkins' do
+    source        'etc-default-jenkins.erb'
+    mode          "0644"
+    action        :create
+    notifies      :restart,  "service[jenkins_server]"
+    variables     :jenkins => node[:jenkins]
   end
 
-  # Plugins installed from the Jenkins Update Center are written to disk with
-  # the `*.jpi` extension. Although plugins downloaded from the Jenkins Mirror
-  # have an `*.hpi` extension we will save the plugins with a `*.jpi` extension
-  # to match Update Center's behavior.
-  remote_file File.join(plugins_dir, "#{name}.jpi") do
-    source "#{node['jenkins']['mirror']}/plugins/#{name}/#{version}/#{name}.hpi"
-    owner node['jenkins']['server']['user']
-    group node['jenkins']['server']['group']
-    backup false
-    action :create_if_missing
-    notifies :restart, "service[jenkins]"
-    notifies :create, "ruby_block[block_until_operational]"
+  service "jenkins_server" do
+    service_name  'jenkins'
+    action        node[:jenkins][:server][:run_state]
+    #options       Mash.new(:service_name => 'jenkins_server').merge(node[:jenkins])
   end
-end
+  # kill_old_service("jenkins") do
+  #   only_if{ File.exists?("/etc/init.d/jenkins") }
+  # end
 
-ruby_block "block_until_operational" do
-  block do
-    Chef::Log.info "Waiting until Jenkins is listening on port #{node['jenkins']['server']['port']}"
-    until JenkinsHelper.service_listening?(node['jenkins']['server']['port']) do
-      sleep 1
-      Chef::Log.debug(".")
-    end
+when /mac_os_x/
 
-    Chef::Log.info "Waiting until the Jenkins API is responding"
-    test_url = URI.parse("#{node['jenkins']['server']['url']}/api/json")
-    until JenkinsHelper.endpoint_responding?(test_url) do
-      sleep 1
-      Chef::Log.debug(".")
-    end
+  template '/Library/LaunchDaemons/org.jenkins-ci.jenkins_server.plist' do
+    source      "org.jenkins-ci.jenkins_server.plist.erb"
+    variables   :jenkins => node[:jenkins], :startable => startable?(node[:jenkins][:server])
   end
-  action :nothing
-end
 
-log "ensure_jenkins_is_running" do
-  notifies :start, "service[jenkins]", :immediately
-  notifies :create, "ruby_block[block_until_operational]", :immediately
+  service "jenkins_server" do
+    provider    Chef::Provider::Service::Macosx
+    action      node[:jenkins][:server][:run_state]
+  end
+
+  Chef::Log.debug <<EOF
+Currently cannot launch jenkins service on #{node.platform}, you're on your own.
+
+Here's what brew recommends:
+
+  If this is your first install, automatically load on login with:
+    mkdir -p ~/Library/LaunchAgents
+  cp /usr/local/Cellar/jenkins/*/homebrew.mxcl.jenkins.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.jenkins.plist
+
+  If this is an upgrade and you already have the homebrew.mxcl.jenkins.plist loaded:
+    launchctl unload -w ~/Library/LaunchAgents/homebrew.mxcl.jenkins.plist
+  cp /usr/local/Cellar/jenkins/*/homebrew.mxcl.jenkins.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.jenkins.plist
+
+  Or start it manually:
+    java -jar /usr/local/Cellar/jenkins/*/lib/jenkins.war
+
+EOF
+
+else
+  Chef::Log.warn "Don't know how to install jenkins service on platform #{node.platform}, you're on your own"
 end

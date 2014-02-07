@@ -18,8 +18,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# mkdir -p /media/ephemeral0/var/lib/hadoop/cache/mapred/
-# chown -R mapred:hadoop /media/ephemeral0/var/lib/hadoop/cache/mapred
+
+include_recipe "hadoop-cdh4::config_files"
+
+node.set[:cloudera_cdh][:jobtracker][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-jobtracker').private_ip
 
 package "hadoop-0.20-mapreduce-tasktracker" do
   action :install

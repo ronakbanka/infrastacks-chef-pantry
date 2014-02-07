@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: hadoop-hdp-2.0 
+# Cookbook Name:: hadoop-hdp-2.0
 # Recipe:: pig client
 #
 #
@@ -20,7 +20,10 @@
 # limitations under the License.
 
 
+include_recipe "hadoop-cdh4::config_files"
 
+node.set[:cloudera_cdh][:namenode][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-namenode').private_ip
+node.set[:cloudera_cdh][:jobtracker][:host] = discover(:'hadoop-cdh4', :'hadoop-cdh4-jobtracker').private_ip
 
 package "pig" do
   action :install
